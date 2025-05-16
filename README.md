@@ -270,8 +270,8 @@ Here, `get_image_from_google_drive` and `get_exchange_rate` are the functions of
 ### Options
 A2AApp has the following options.
 
-- In the case of `Execute as: Me` and `Who has access to the app: Anyone` for Web Apps, anyone can access. To enhance security, an access key can be used. When using the access key, please set it as follows: `return new A2AApp.mcpApp({accessKey: "sample"}).server(object);`. Additionally, please add it as a query parameter to the Web App URL as follows: `https://script.google.com/macros/s/###/exec?accessKey=sample` and `https://script.google.com/macros/s/###/dev?access_token=###&accessKey=sample`.
-- A2AApp can also record a log. In this case, please set it as follows: `return new A2AApp.mcpApp({accessKey: "sample", log: true, spreadsheetId: "###"}).server(object);`. With this setting, the log is recorded in the Spreadsheet.
+- In the case of `Execute as: Me` and `Who has access to the app: Anyone` for Web Apps, anyone can access. To enhance security, an access key can be used. When using the access key, please set it as follows: `return new A2AApp.a2aApp({accessKey: "sample"}).server(object);`. Additionally, please add it as a query parameter to the Web App URL as follows: `https://script.google.com/macros/s/###/exec?accessKey=sample` and `https://script.google.com/macros/s/###/dev?access_token=###&accessKey=sample`.
+- A2AApp can also record a log. In this case, please set it as follows: `return new A2AApp.a2aApp({accessKey: "sample", log: true, spreadsheetId: "###"}).server(object);`. With this setting, the log is recorded in the Spreadsheet.
 
 ### Format of returned value from function
 
@@ -292,7 +292,7 @@ In this script, please set the format of the value returned from the function as
 Of course, you can use this library by directly copying and pasting "A2AApp" into your script editor without using it as a library. In that case, please copy and paste the script of this library. And modify as follows.
 
 ```javascript
-return new A2AApp.mcpApp().server(object);
+return new A2AApp.a2aApp().server(object);
 ```
 
 to
