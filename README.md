@@ -1,56 +1,115 @@
-Building Agent2Agent (A2A) Server with Google Apps Script
-
 # A2AApp
+
+Enabling Collaborative Agent Systems through Google Apps Script-based Agent2Agent (A2A) Network
 
 <a name="top"></a>
 [![MIT License](http://img.shields.io/badge/license-MIT-blue.svg?style=flat)](LICENCE)
 
 <a name="overview"></a>
 
+
 ![](images/fig1.jpg)
 
 # Overview
 
-This is a library for implementing an Agent2Agent (A2A) server using Google Apps Script. This enables AI agent communication and secure service access for AI-powered workflows. This result could potentially highlight the capabilities of Google Apps Script.
+This report details an Agent2Agent (A2A) network built with Google Apps Script. It enables secure, decentralized AI communication and integration within Google Workspace, acting as both an A2A server and client.
 
 # Description
 
-Agent2Agent (A2A) is a proposed open protocol enabling diverse AI agents to communicate and collaborate effectively, breaking down silos and allowing complex task execution while preserving agent opacity (hiding internal workings). This report explores implementing an A2A server using Google Apps Script within Google Workspace. This approach could seamlessly allow AI agents secure access to Google services like Docs and Sheets via a standardized protocol, facilitating AI-powered workflows tied to user data. A sample script demonstrates technical potential despite the lack of a dedicated SDK. While acknowledging Apps Script limitations like execution time and specification, this exploration is valuable for developing internal or user-centric AI integrations within Google Workspace. A successful demonstration could potentially highlight the capabilities of Google Apps Script.
+This report details the creation of an Agent2Agent (A2A) network utilizing Google Apps Script's Web Apps. A2A is an open protocol designed for secure and seamless communication between various AI agents, addressing limitations of isolated platforms.
 
-# Usage
+The implementation leverages Google Apps Script to establish a decentralized and interoperable AI agent ecosystem, showcasing its practical application in building a robust and secure A2A network. It highlights the script's capabilities for internal or user-centric AI integrations within Google Workspace, providing secure access to Google services like Docs and Sheets for AI-powered workflows. A2AApp functions as both an A2A server and client, enabling secure AI agent communication and facilitating access to essential services, ultimately empowering more sophisticated and interconnected AI applications.
 
-## 1. Create a Google Apps Script project
+# Advantages of Using A2A Server and Client with Google Apps Script
 
-Please create a new Google Apps Script project of the standalone type. [Ref](https://developers.google.com/apps-script/guides/projects#create-standalone) Of course, the sample script in this report can also be used for the container-bound script type.
+Here are the advantages of using an A2A (Agent-to-Agent) server and client with Google Apps Script:
 
-Open the script editor of the created Google Apps Script project.
+* **Integration with Google Workspace**: It allows direct management of active Google Docs and Sheets when using the A2A client.
+* **Seamless Integration with Google Resources**: Effortlessly connects with Google services like Google APIs, Docs, Sheets, Slides, Gmail, and Calendar, leveraging secure authorization scopes.
+* **Enhanced Security via Access Tokens**: Simplifies access token acquisition for Web Apps, eliminating the need for temporary token inclusion in Python client queries for agent card retrieval.
+* **Improved User Restriction**: Web Apps can be restricted to specific users, increasing security.
+* **Automated Script Execution**: Supports automatic script execution via triggers, beneficial for client-side operations. This client can interact with various A2A servers (Google Apps Script, Python, Node.js, etc.).
+* **Easy Deployment**: Web Apps can be readily deployed as A2A servers, accessible by various A2A clients (Google Apps Script, Python, Node.js, etc.).
+* **Decentralized Agent Communication**: Enables direct communication between AI agents, fostering a decentralized AI ecosystem.
 
-## 2. Install a library
-
-### Repository
+# Repository
 
 [https://github.com/tanaikech/A2AApp](https://github.com/tanaikech/A2AApp)
 
-### Library's project key
+# Usage
 
+Here, the following sample is used for testing.
+
+
+![](images/fig2.jpg)
+
+Please do the following steps.
+
+## 1. Ger API key
+
+In order to use the scripts in this report, please use your API key. [Ref](https://ai.google.dev/gemini-api/docs/api-key) This API key is used to access the Gemini API.
+
+## 2. Copy sample files
+
+Here, an A2A client and 4 A2A servers are used. Those files can be copied by the following simple Google Apps Script. Please copy and paste the following script to the script editor of Google Apps Script, and run `myFunction`. By this, the requirement files are copied to your Google Drive. The whole scripts can also be seen on [this repository](https://github.com/tanaikech/A2AApp).
+
+When `dstFolder` is `root`, the files are copied to the root folder. If you want to copy them to the specific folder, please set your folder ID.
+
+```javascript
+function myFunction() {
+  const dstFolderId = "root"; // Please set your destination folder ID. The default is the root folder.
+
+  // These file IDs are the sample client and servers.
+  const fileIds = [
+    "1IcUv4yQtlzbiAqRXCEpIfilFRaY4_RS5idKEEdzNWgk", // A2A client,
+    "103RvSs0xWgblNHqEssVMo-ar7Ae8Fe-NyUsyL1m4k0u428hB7v7Jmnby", // A2A server 1_Google Sheets Manager Agent
+    "1z8bDFo8n4ssco8UeBXatLp3yMPUVkbqEofZE8y1-XYstEqYiGifvVSwf", // A2A server 2_Google Drive Manager Agent,
+    "1FltchXoOfbo731KAWJd0hGbrN75aZ_lg76og-ooldk5B-uAE142RppWa", // A2A server 3_Google Calendar Manager Agent,
+    "1k3-JwyKBJ2DsGeWeT0dTucdzm0DHSd_1XlaevFA4_pJhGL67vDRYD0ym", // A2A server 4_APIs Manager Agent,
+  ];
+
+  const folder = DriveApp.getFolderById(dstFolderId);
+  const headers = { authorization: "Bearer " + ScriptApp.getOAuthToken(), "Content-Type": "application/json" };
+  const reqs = fileIds.map(fileId => ({
+    url: `https://www.googleapis.com/drive/v3/files/${fileId}/copy`,
+    headers,
+    payload: JSON.stringify({ parents: [dstFolderId], name: DriveApp.getFileById(fileId).getName() })
+  }));
+  UrlFetchApp.fetchAll(reqs).forEach(res => {
+    const { id } = JSON.parse(res.getContentText());
+    DriveApp.getFileById(id).moveTo(folder);
+  });
+  
+  //  If an error is related to Drive API, please enable Drive API v3 at Advanced Google services.
+}
 ```
-1OuHIiA5Ge0MG_SpKdv1JLz8ZS3ouqhvrF5J6gRRr6xFiFPHxkRsgjMI6
-```
 
-In order to simply deploy the A2A server, I created the script as a Google Apps Script library. To use this library, please install the library as follows.
+When this function is run, the following files are copied.
 
-1. Open the script editor of Google Apps Script.
-2. [Install this library](https://developers.google.com/apps-script/guides/libraries): The library's project key is **`1OuHIiA5Ge0MG_SpKdv1JLz8ZS3ouqhvrF5J6gRRr6xFiFPHxkRsgjMI6`**.
+- "A2A client"
+- "A2A server 1_Google Sheets Manager Agent"
+- "A2A server 2_Google Drive Manager Agent,"
+- "A2A server 3_Google Calendar Manager Agent"
+- "A2A server 4_APIs Manager Agent"
 
-This library includes [GeminiWithFiles](https://github.com/tanaikech/GeminiWithFiles) for accessing Gemini.
+## 2. Setting
 
-## 3. Web Apps
 
-To allow access from the A2A client, the project uses Web Apps built with Google Apps Script. [Ref](https://developers.google.com/apps-script/guides/web) The A2A client can access the A2A server using a GET and POST HTTP request. Thus, the Web Apps can be used as the A2A server.
+### 1. A2A servers
+
+For 4 A2A servers, please follow the following steps.
+
+#### 1. Set API key
+
+Open the script editors of "A2A server 1", "A2A server 2", "A2A server 3", and "A2A server 4". And, please set your API key for using the Gemini API to `apiKey` in `A2Aserver1.gs`, `A2Aserver2.gs`, `A2Aserver3.gs`, and `A2Aserver4.gs`.
+
+#### 2. Deploy Web Apps
+
+To allow access from the A2A client, the server side uses Web Apps built with Google Apps Script. [Ref](https://developers.google.com/apps-script/guides/web) The A2A client can access the A2A server using a GET and POST HTTP request. Thus, the Web Apps can be used as the A2A server.
 
 Detailed information can be found in [the official documentation](https://developers.google.com/apps-script/guides/web#deploy_a_script_as_a_web_app).
 
-Please follow these steps to deploy the Web App in the script editor.
+Please follow these steps to deploy the Web App in the script editors for 4 A2A servers.
 
 1. In the script editor, at the top right, click "Deploy" -> "New deployment".
 2. Click "Select type" -> "Web App".
@@ -59,257 +118,101 @@ Please follow these steps to deploy the Web App in the script editor.
 5. Select **"Anyone"** for **"Who has access to the app:"**. In this sample, a simple approach allows requests without an access token. However, a custom API key is used for accessing the Web App.
 6. Click "Deploy".
 7. On the script editor, at the top right, click "Deploy" -> "Test deployments".
-8. Copy the Web App URL. It will be similar to `https://script.google.com/macros/s/###/exec`.
+8. Please run the function `getServerURL` with the script editor. By this, the URL like `
+https://script.google.com/macros/s/###/dev?accessKey=sample` is retrieved. Please copy each Web Apps URL for 4 A2A servers.
 
 **It is important to note that when you modify the Google Apps Script for the Web App, you must modify the deployment as a new version.** This ensures the modified script is reflected in the Web App. Please be careful about this. Also, you can find more details on this in my report "[Redeploying Web Apps without Changing URL of Web Apps for new IDE](https://gist.github.com/tanaikech/ebf92d8f427d02d53989d6c3464a9c43)".
 
-## 4. Script
+In this sample, after the client with Google Apps Script was tested, the servers will be tested by a Python script. So, `Execute as: Me` and `Who has access to the app: Anyone` are used.
 
-The script in this sample is as follows.
+### 2. A2A client
 
-- Please set your API key for using the Gemini API to `apiKey`.
-- Please set your Web Apps URL to `WebAppsURL`.
+For the A2A client, please follow the following steps.
 
-```javascript
-/**
- * Please set your Web Apps URL.
- * This URL is as follows. I think that in order to test the sample, the following URL can be used.
- * https://script.google.com/macros/s/###/exec
- * 
- * If you want to use the access key to Web Apps, please use the following URL.
- * In this case, please include {accessKey: "sample"} to the method "a2aApp".
- * https://script.google.com/macros/s/###/exec?accessKey=sample
- */
-const WebAppsURL = "https://script.google.com/macros/s/###/exec";
+#### 1. Set API key
 
-// doGet and doPost are used for connecting between the A2A server and the A2A client with the HTTP request.
-const doGet = e => main(e);
-const doPost = e => main(e);
+Open the Google Spreadsheet of "A2A client", and open the script editor of Google Apps Script. And, please set your API key for using Gemini API to `apiKey` in `main.gs`.
 
-// This is the main function.
-function main(eventObject) {
-  const apiKey = "###"; // Please set your API key for using Gemini API.
+#### 2. Set Web Apps URLs
 
-  const object = {
-    eventObject,
-    agentCard: getAgentCard_,
-    functions: getFunctions_,
-    apiKey,
-  };
-  return A2AApp.a2aApp().server(object);
-}
-```
+Please set your Web Apps URLs for 4 A2A servers to `agentCardUrls`. And, save the script. In this sample, 4 Web Apps URLs are set.
 
-`getAgentCard_` and `getFunctions_` are the following functions. In this sample, the following agent card and functions are used.
+## 3. Testing
+Please reopen the Google Spreadsheet of the A2A client. By this, you can see the custom menu `Run`. Please run `Open sidebar`. When you see the authorization dialog open, please authorize all scopes. By this, the sidebar is opened. When the above steps were correctly done, you can test it. The demonstration of this is as follows.
 
-About the agent card, in the current stage, it is required to set `"streaming": false, "pushNotifications": false, "stateTransitionHistory": false` at `capabilities` because of the specification of the Web Apps. Please be careful about this. This also might be a limitation.
+### Sample 1
+In the 1st sample, the active Spreadsheet is used.
 
-```javascript
-/**
- * This is a sample agent card.
- * You can see the specification of the agent card at the following official site.
- * Ref: https://google.github.io/A2A/specification/
- * 
- * This agent card of "Currency Exchange Rates Tool" is from
- * https://google.github.io/A2A/specification/#56-sample-agent-card
- * https://github.com/google/A2A/blob/main/samples/python/agents/langgraph/__main__.py#L28
- */
-const getAgentCard_ = _ => (
-  {
-    "name": "Google Resource Manager Agent",
-    "description": [
-      `Provide management for using Google resources.`,
-      `Also, help with exchange values between various currencies.`,
-      `1. Return an image data from a given filename by searching Google Drive.`,
-      `2. Run with exchange values between various currencies. For example, this answers "What is the exchange rate between USD and GBP?".`,
-    ].join("\n"),
-    "provider": {
-      "organization": "Tanaike",
-      "url": "https://github.com/tanaikech"
-    },
-    "version": "1.0.0",
-    "url": WebAppsURL,
-    "defaultInputModes": ["text/plain"],
-    "defaultOutputModes": ["text/plain"],
-    "capabilities": {
-      "streaming": false,
-      "pushNotifications": false,
-      "stateTransitionHistory": false,
-    },
-    "skills": [
-      {
-        "id": "get_image_from_google_drive",
-        "name": "Get Images from Google Drive",
-        "description": "Return an image data from a given filename by searching Google Drive.",
-        "tags": ['image', 'google drive'],
-        "examples": [
-          'Return an image file of "sample.png" on Google Drive.',
-          'Show an image file of "sample.png" on Google Drive.'
-        ],
-        "inputModes": ["text/plain"],
-        "outputModes": ["image/png"]
-      },
-      {
-        "id": "convert_currency",
-        "name": "Currency Exchange Rates Tool",
-        "description": "Helps with exchange values between various currencies",
-        "tags": ['currency conversion', 'currency exchange'],
-        "examples": ['What is exchange rate between USD and GBP?'],
-        "inputModes": ["text/plain"],
-        "outputModes": ["text/plain"]
-      }
-    ]
-  }
-);
+![](images/fig3.gif)
 
-/**
- * This is an object including sample functions. These functions are used for creating the response data to the A2A client.
- * You can see the specification of this object as follows.
- * Ref: https://github.com/tanaikech/GeminiWithFiles?tab=readme-ov-file#use-function-calling
- * 
- * get_exchange_rate is from the Google's sample as follows.
- * Ref: https://github.com/google/A2A/blob/main/samples/python/agents/langgraph/agent.py#L19
- */
-const getFunctions_ = _ => (
-  {
-    params_: {
-      get_image_from_google_drive: {
-        description: "Use this to get image data from Google Drive by giving a filename.",
-        parameters: {
-          type: "object",
-          properties: {
-            filename: {
-              type: "string",
-              description: "Filename of the image file on Google Drive."
-            }
-          },
-          required: ["filename"]
-        }
-      },
-      get_exchange_rate: {
-        description: "Use this to get current exchange rate.",
-        parameters: {
-          type: "object",
-          properties: {
-            currency_from: {
-              type: "string",
-              description: "Source currency. Default is USD."
-            },
-            currency_to: {
-              type: "string",
-              description: "Destination currency. Default is EUR."
-            },
-            currency_date: {
-              type: "string",
-              description: "Date of the currency. Default is latest."
-            }
-          },
-          required: ["currency_from", "currency_to", "currency_date"]
-        }
-      },
-    },
+First, the value of the active cell is retrieved.
 
-    get_image_from_google_drive: ({ filename }) => {
-      let result;
-      try {
-        const files = DriveApp.searchFiles(`title contains '${filename}' and mimeType contains 'image' and trashed=false`);
-        if (files.hasNext()) {
-          const file = files.next();
+Prompt: **Get the active cells. Return the values from the active cells.**
+Response: **The active cell is B2 in Sheet1 of the spreadsheet with ID ###. The value of this cell is "sample text"**
 
-          /**
-           * You can see the format of the response value from the following official document.
-           * Ref: https://google.github.io/A2A/specification/#65-part-union-type
-           */
-          result = {
-            type: "file",
-            file: {
-              name: file.getName(),
-              bytes: Utilities.base64Encode(file.getBlob().getBytes()),
-              mimeType: file.getMimeType(),
-            },
-            metadata: null
-          };
+Next, the values are put into the active cell.
 
-        } else {
-          result = `There is no file of "${filename}".`;
-        }
-      } catch (err) {
-        result = err.message;
-      }
-      return {
-        returnThis: true, // When this is true, the response value to the A2A client is this result of this function. When you want to directly return the data from the function, please use this.
-        result,
-      }
-    },
+Prompt: **Get the active cells. Put values '[["a1", "b1"],["a2", "b2"],["a3", "b3"]]' to the active cell.
+Response: The active cell is A5 in Sheet1 of the spreadsheet with ID ###. The values '[[\"a1\", \"b1\"],[\"a2\", \"b2\"],[\"a3\", \"b3\"]]' have been successfully placed into cells A5:B7 of the same sheet and spreadsheet.**
 
-    /**
-     * Ref: https://github.com/google/A2A/blob/main/samples/python/agents/langgraph/agent.py#L19
-     * When returnThis is not used, the response value to the A2A client is generated using this result of this function.
-     */
-    get_exchange_rate: ({ currency_from, currency_to, currency_date }) => ({
-      returnThis: false, // When this is false, the response value to the A2A client is generated using this result of this function.
+The information of the active cell is retrieved on the A2A client, and the information is used in the A2A server (Google Sheets Manager Agent). This result indicates the advantage of using the A2A client built by Google Apps Script.
 
-      /**
-       * You can see the format of the response value from the following official document.
-       * Ref: https://google.github.io/A2A/specification/#65-part-union-type
-       */
-      result: {
-        type: "text",
-        text: JSON.parse(UrlFetchApp.fetch(`https://api.frankfurter.app/${currency_date}?from=${currency_from}&to=${currency_to}`).getContentText()),
-        metadata: null
-      }
+### Sample 2
+In the 2nd sample, image data is retrieved from Google Drive.
 
-    }),
+![](images/fig4.gif)
 
-  }
-);
-```
+Prompt: **Show the image of CherryBlossom from Google Drive.**
+Response: **OK. I have downloaded the image \"CherryBlossom.png\" from Google Drive.**
 
-Here, `get_image_from_google_drive` and `get_exchange_rate` are the functions of Google Apps Script. These scripts are automatically run in this script. And, the response value is generated using the result from the function, and the value is returned to the A2A client.
+### Sample 3
+In the 3rd sample, multiple agents are used.
+
+![](images/fig5.gif)
+
+Prompt: **Check tomorrow's weather conditions at 12 PM around Shinagawa Station and exchange 100 US Dollars for Japanese Yen. Under this condition, will we enjoy eating lunch outside for 1 hour at the retrieved location and that day? Finally, create it as a schedule in Google Calendar.**
+
+Response: **OK. Here's a summary based on your question and the provided answers: The weather in Shinagawa Station at 12 PM on May 28, 2025, is predicted to be mainly clear, partly cloudy, and overcast. The exchange rate is 100 USD to approximately 14,290 JPY. A Google Calendar event titled 'Lunch at Shinagawa Station' has been created for May 28, 2025, from 12:00 to 13:00, including the weather conditions and JPY value in the description. To determine if eating lunch outside for an hour is suitable, factors like temperature, wind, and personal preferences should be considered along with the mainly clear, partly cloudy, and overcast conditions.**
+
+This process automatically creates an event in Google Calendar as follows.
+
+
+![](images/fig6.png)
+
+In this case, this response was created using "create_schedule_to_Google_Calendar" of "Google Calendar Manager Agent" and "get_exchange_rate" and "get_current_weather" of "APIs Manager Agent" together with the A2A client. Also, an event was automatically created in Google Calendar. From this result, you can confirm that AI agents are working together.
 
 ### Options
 A2AApp has the following options.
 
-- In the case of `Execute as: Me` and `Who has access to the app: Anyone` for Web Apps, anyone can access. To enhance security, an access key can be used. When using the access key, please set it as follows: `return new A2AApp.a2aApp({accessKey: "sample"}).server(object);`. Additionally, please add it as a query parameter to the Web App URL as follows: `https://script.google.com/macros/s/###/exec?accessKey=sample` and `https://script.google.com/macros/s/###/dev?access_token=###&accessKey=sample`.
-- A2AApp can also record a log. In this case, please set it as follows: `return new A2AApp.a2aApp({accessKey: "sample", log: true, spreadsheetId: "###"}).server(object);`. With this setting, the log is recorded in the Spreadsheet.
+- In the case of `Execute as: Me` and `Who has access to the app: Anyone` for Web Apps, anyone can access. To enhance security, an access key can be used. When using the access key, please set it as follows: `return new A2AApp({accessKey: "sample"}).server(object);`. Additionally, please add it as a query parameter to the Web App URL as follows: `https://script.google.com/macros/s/###/exec?accessKey=sample` and `https://script.google.com/macros/s/###/dev?access_token=###&accessKey=sample`.
+- Also, in the case of the A2A client with Google Apps Script, it accesses the Web Apps of the A2A server with Google Apps Script using the access token. By this, even when "Who has access: Anyone with Google account" can be used as the setting. But, in that case, it is required to share the Google Apps Script projects. Please be careful about this.
+- A2AApp can also record a log. In this case, please set it as follows: `return new A2AApp({accessKey: "sample", log: true, spreadsheetId: "###"}).server(object);`. With this setting, the log is recorded in the Spreadsheet.
 
-### Format of returned value from function
+# Summary
 
-In this script, please set the format of the value returned from the function as follows.
+The successful communication between the A2A client and A2A servers, both developed using Google Apps Script, demonstrates the viability of building such a system within the Google ecosystem. This setup leverages the power of active Google services like Google Sheets and Google Docs, enhancing their utility through the A2A client.
 
-```json
-{
-  "returnThis": [Boolean],
-  "result": { [Part] }
-}
-```
+A key proposed enhancement for this system is the implementation of an exclusive server that would centralize and provide the URLs of all A2A servers to clients. This approach would enable more efficient management of A2A servers on a per-client basis. Furthermore, it suggests the potential for an A2A server designed to manage Gmail, facilitating automated tasks such as autoreplies and Google Calendar event creation by periodically reading incoming emails.
 
-  - `returnThis`: There is a case where it is required to return the raw data from the function. In this case, please use this. When you want to directly return the data from the function, please set `true`. When this is `false`, the final response text is generated using the result of the function.
-  - `result`: Result from the function. The details of `[Part]` can be seen at [the official document](https://google.github.io/A2A/specification/#65-part-union-type).
+# Additional Information: Testing A2A Client with Python Using A2A Servers Built by Google Apps Script
 
-### Another approach
+The 4 A2A servers built by Google Apps Script, shown in the image above, can also be used with Google's Python demo UI, as shown in the following demo video. [Ref](https://github.com/google-a2a/)
 
-Of course, you can use this library by directly copying and pasting "A2AApp" into your script editor without using it as a library. In that case, please copy and paste the script of this library. And modify as follows.
+![](images/fig7.gif)
 
-```javascript
-return new A2AApp.a2aApp().server(object);
-```
+The following sections explain how to test the demo UI from Google. [Ref](https://github.com/google-a2a/) If you wish to use it, please follow these steps. If you are not required to use this and are only testing the client with Google Apps Script, you may skip this section.
 
-to
+<details>
 
-```javascript
-return new A2AApp().server(object);
-```
+## 1. Prepare a demo for testing an A2A Protocol
 
-## 5. Prepare a demo for testing an A2A Protocol
-
-The demo can be retrieved from [https://github.com/google/A2A](https://github.com/google/A2A).
+The demo can be retrieved from [https://github.com/google-a2a/](https://github.com/google-a2a/).
 
 To connect the client of this demo to the Web App created using Google Apps Script, several modifications are required as follows.
 
-### 5-1. Add redirect
+### 1-1. Add redirect
 
-Accessing the Web App requires a redirect. However, currently, the demo script cannot handle redirects. Therefore, a modification is required. Please modify the `_send_request` function in `A2A/samples/python/common/client/client.py` as follows. [Ref](https://github.com/google/A2A/blob/main/samples/python/common/client/client.py#L66) This modification allows the client to access the Web App.
+Accessing the Web App requires a redirect. However, currently, the demo script cannot handle redirects. Therefore, a modification is required. Please modify the `_send_request` function in `a2a-samples/samples/python/common/client/client.py` as follows. [Ref](https://github.com/google-a2a/a2a-samples/blob/main/samples/python/common/client/client.py#L71) This modification allows the client to access the Web App.
 
 From
 
@@ -327,9 +230,9 @@ response = await client.post(
 )
 ```
 
-### 5-2. Add query parameter
+### 1-2. Add query parameter
 
-As mentioned in the next section, to directly access the Web App using the `.well-known/agent.json` path, an access token is required. In this case, the access token must be included as a query parameter. However, currently, the demo script cannot add the query parameter. Therefore, a modification is required. Please modify the `get_agent_card` function in `A2A/demo/ui/utils/agent_card.py` as follows. [Ref](https://github.com/google/A2A/blob/main/demo/ui/utils/agent_card.py) This modification ensures that when a URL like `https://script.google.com/macros/s/###/dev?access_token=###` is used to register the agent card, it is correctly converted to `https://script.google.com/macros/s/###/dev/.well-known/agent.json?access_token=###`. This allows the Web App to be accessed using the `.well-known/agent.json` path.
+As mentioned in the next section, to directly access the Web App using the `.well-known/agent.json` path, an access token is required. In this case, the access token must be included as a query parameter. However, currently, the demo script cannot add the query parameter. Therefore, a modification is required. Please modify the `get_agent_card` function in `a2a-samples/demo/ui/utils/agent_card.py` as follows. [Ref](https://github.com/google-a2a/a2a-samples/blob/main/demo/ui/utils/agent_card.py) This modification ensures that when a URL like `https://script.google.com/macros/s/###/dev?access_token=###` is used to register the agent card, it is correctly converted to `https://script.google.com/macros/s/###/dev/.well-known/agent.json?access_token=###`. This allows the Web App to be accessed using the `.well-known/agent.json` path.
 
 ```python
 import requests
@@ -350,7 +253,9 @@ def get_agent_card(remote_agent_address: str) -> AgentCard:
 
 This modification is not required if you are using a local server to register the Web App's agent card.
 
-## 6. Register Agent Card
+## 2. Register Agent Card
+
+**This section is for the demo by Google. [Ref](https://github.com/google-a2a/) If you want to use this, please follow the following steps. If you are not required to use this and you test with only the client with Google Apps Script, please skip this section.**
 
 To register the agent card on the client side, there are the following two patterns.
 
@@ -358,20 +263,16 @@ To register the agent card on the client side, there are the following two patte
 
 In this pattern, the agent card is registered directly from the A2A server to the A2A client. To achieve this, it is required to know the specifications of Web Apps in Google Apps Script. When the agent card is registered to the client side, it is required to access the path `https://{someURL}/.well-known/agent.json`. Unfortunately, at the current stage, Web Apps cannot be directly accessed with such a URL. However, when an access token is used, Web Apps can be accessed using such a URL. [Ref](https://github.com/tanaikech/taking-advantage-of-Web-Apps-with-google-apps-script?tab=readme-ov-file#pathinfo-updated-on-february-14-2023) The path `.well-known/agent.json` can be confirmed as `pathInfo` in the event object of Web Apps. This specification is used in this pattern.
 
-To test this, the URL for registering the agent card is retrieved using the following script.
+To test this, the URL for registering the agent card is retrieved using the following script. This function is included in each server.
 
 ```javascript
 /**
- * This function is used for retrieving the URL for registering the AgentCard.
+ * This function is used for retrieving the URL for registering the AgentCard to Python demo script.
  * Please directly run this function and copy the URL from the log.
  */
 function getRegisteringAgentCardURL() {
-  const registeringAgentCardURL = `${ScriptApp.getService().getUrl()}?access_token=${ScriptApp.getOAuthToken()}`;
+  const registeringAgentCardURL = `${ScriptApp.getService().getUrl()}?access_token=${ScriptApp.getOAuthToken()}&accessKey=sample`;
   console.log(registeringAgentCardURL);
-
-
-  // The following comment line is used for automatically detecting the scope of "https://www.googleapis.com/auth/drive.readonly". This scope is used for accessing Web Apps. So, please don't remove the comment.
-  // DriveApp.getFiles();
 }
 ```
 
@@ -445,29 +346,17 @@ if __name__ == '__main__':
     main()
 ```
 
-## 7. Testing
+## 3. Testing for Python client of demo of Google
 
 To test this, complete the following steps:
 
 - The A2A server for the Web Apps has already been deployed.
-- The demo script at [https://github.com/google/A2A](https://github.com/google/A2A) has already been modified to access the Google Apps Script web app.
+- The demo script at [https://github.com/google-a2a/](https://github.com/google-a2a/) has already been modified to access the Google Apps Script web app.
 - The demo script has already been run.
 
-Once the above steps are completed, access `http://0.0.0.0:12000/` or `http://localhost:12000` in your browser. This will display the UI like the following demonstration.
+Once the above steps are completed, access `http://0.0.0.0:12000/` or `http://localhost:12000` in your browser. And, install the agent cards. This will display the UI like the above demonstration.
 
-![](images/fig2.gif)
-
-In your browser, perform the following steps:
-
-1.  Set your API key for the Gemini API.
-2.  Set the agent by inputting the URL `https://script.google.com/macros/s/###/dev?access_token=###`. This can be obtained from the `getRegisteringAgentCardURL` function in Google Apps Script.
-3.  Input questions like `Exchange 10,000 yen to US Dollars with current rate.` and `Show the image of CherryBlossom from Google Drive.`. Replace `CherryBlossom` with your filename.
-
-By following these steps, you can see results similar to the demonstration shown above.
-
-# Note
-
-- In the current version of [https://github.com/google/A2A](https://github.com/google/A2A), it seems that the JPEG image cannot be displayed in the browser. This might be resolved in the future update.
+</details>
 
 ---
 
@@ -493,7 +382,10 @@ By following these steps, you can see results similar to the demonstration shown
 
   1. Initial release.
 
+- v2.0.0 (May 28, 2025)
+
+  1. Updated A2A server.
+  2. Added A2A client.
+
 [TOP](#top)
-
-
 
