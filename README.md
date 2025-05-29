@@ -51,6 +51,8 @@ In order to use the scripts in this report, please use your API key. [Ref](https
 
 ## 2. Copy sample files
 
+**If you want to use A2AApp as a library, please check [this]().**
+
 Here, an A2A client and 4 A2A servers are used. Those files can be copied by the following simple Google Apps Script. Please copy and paste the following script to the script editor of Google Apps Script, and run `myFunction`. By this, the requirement files are copied to your Google Drive. The whole scripts can also be seen on [this repository](https://github.com/tanaikech/A2AApp).
 
 When `dstFolder` is `root`, the files are copied to the root folder. If you want to copy them to the specific folder, please set your folder ID.
@@ -187,6 +189,7 @@ A2AApp has the following options.
 - In the case of `Execute as: Me` and `Who has access to the app: Anyone` for Web Apps, anyone can access. To enhance security, an access key can be used. When using the access key, please set it as follows: `return new A2AApp({accessKey: "sample"}).server(object);`. Additionally, please add it as a query parameter to the Web App URL as follows: `https://script.google.com/macros/s/###/exec?accessKey=sample` and `https://script.google.com/macros/s/###/dev?access_token=###&accessKey=sample`.
 - Also, in the case of the A2A client with Google Apps Script, it accesses the Web Apps of the A2A server with Google Apps Script using the access token. By this, even when "Who has access: Anyone with Google account" can be used as the setting. But, in that case, it is required to share the Google Apps Script projects. Please be careful about this.
 - A2AApp can also record a log. In this case, please set it as follows: `return new A2AApp({accessKey: "sample", log: true, spreadsheetId: "###"}).server(object);`. With this setting, the log is recorded in the Spreadsheet.
+- A2AApp server can also connect to other servers. For example, when an A2A server is connected to another server, please put the URLs of the servers in `agentCardUrls` of [A2A server 1_Google Sheets Manager Agent.js](https://github.com/tanaikech/A2AApp/blob/master/A2A%20server%201_Google%20Sheets%20Manager%20Agent.js). You can do this for the same for other servers. But, in the current stage, when Google Apps Script is used, I think that directly connecting an A2A client with multiple servers is better because of the process cost.
 
 # Summary
 
@@ -386,6 +389,10 @@ Once the above steps are completed, access `http://0.0.0.0:12000/` or `http://lo
 
   1. Updated A2A server.
   2. Added A2A client.
+
+- v2.0.1 (May 29, 2025)
+
+  1. From v2.0.1, A2AApp can also be used as a library.
 
 [TOP](#top)
 
