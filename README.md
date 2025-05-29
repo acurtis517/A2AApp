@@ -51,7 +51,7 @@ In order to use the scripts in this report, please use your API key. [Ref](https
 
 ## 2. Copy sample files
 
-**If you want to use A2AApp as a library, please check [this]().**
+**If you want to use A2AApp as a library, please check [this](https://github.com/tanaikech/A2AApp/tree/master/Use_A2AApp_as_library).**
 
 Here, an A2A client and 4 A2A servers are used. Those files can be copied by the following simple Google Apps Script. Please copy and paste the following script to the script editor of Google Apps Script, and run `myFunction`. By this, the requirement files are copied to your Google Drive. The whole scripts can also be seen on [this repository](https://github.com/tanaikech/A2AApp).
 
@@ -392,7 +392,7 @@ Once the above steps are completed, access `http://0.0.0.0:12000/` or `http://lo
 
 - v2.0.1 (May 29, 2025)
 
-  1. From v2.0.1, A2AApp can also be used as a library.
+  1. From v2.0.1, A2AApp can also be used as a library. [Ref](https://github.com/tanaikech/A2AApp/tree/master/Use_A2AApp_as_library)
 
 [TOP](#top)
 
