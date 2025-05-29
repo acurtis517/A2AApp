@@ -3,8 +3,8 @@
  * This is used for building both an Agent2Agent (A2A) server and an A2A client with Google Apps Script.
  * 
  * Author: Kanshi Tanaike
- * 20250527 13:34
- * version 2.0.0
+ * 20250529 10:04
+ * version 2.0.1
  * @class
  */
 class A2AApp {
@@ -91,6 +91,34 @@ class A2AApp {
 
     /** @private */
     this.headers = { authorization: "Bearer " + ScriptApp.getOAuthToken() };
+
+    this.lock = this.lock || LockService.getScriptLock();
+
+    this.properties = this.properties || PropertiesService.getScriptProperties();
+  }
+
+  /**
+  * ### Description
+  * Set services depend on each script. For example, those are LockService and PropertiesService.
+  * For example, if you don't set these properties, you cannot use this as a library.
+  * If you want to use A2AApp as a library, please set the services.
+  *
+  * In the current stage, only LockService is used and PropertiesService is not used in A2AApp. PropertiesService is for the future update.
+  *
+  * @param {Object} services Array including the services you want to use.
+  * @params {LockService.Lock} services.lock One of LockService.getDocumentLock(), LockService.getScriptLock(), or LockService.getUserLock(). Default is LockService.getScriptLock().
+  * @params {PropertiesService.Properties} services.properties  One of PropertiesService.getDocumentProperties(), PropertiesService.getScriptProperties(), or PropertiesService.getUserProperties(). Default is PropertiesService.getScriptProperties().
+  * @return {A2AApp}
+  */
+  setServices(services) {
+    const { lock, properties } = services;
+    if (lock && lock.toString() == "Lock") {
+      this.lock = lock;
+    }
+    if (properties && lock.toString() == "Properties") {
+      this.properties = properties;
+    }
+    return this;
   }
 
   /**
@@ -108,7 +136,7 @@ class A2AApp {
     console.log("Server side");
     this.errorProcess_(object);
     let id = "No ID";
-    const lock = LockService.getScriptLock();
+    const lock = this.lock;
     if (lock.tryLock(350000)) {
       try {
         let obj = {};
@@ -172,7 +200,7 @@ class A2AApp {
   */
   client(object = {}) {
     console.log("Client side");
-    const lock = LockService.getScriptLock();
+    const lock = this.lock;
     if (lock.tryLock(350000)) {
       try {
         const { agentCardUrls = [], agentCards = [] } = object;
