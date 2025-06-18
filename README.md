@@ -394,5 +394,9 @@ Once the above steps are completed, access `http://0.0.0.0:12000/` or `http://lo
 
   1. From v2.0.1, A2AApp can also be used as a library. [Ref](https://github.com/tanaikech/A2AApp/tree/master/Use_A2AApp_as_library)
 
+- v2.0.2 (June 18, 2025)
+
+  1. A bug was removed.
+
 [TOP](#top)
 

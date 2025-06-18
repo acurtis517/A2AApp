@@ -3,8 +3,8 @@
  * This is used for building both an Agent2Agent (A2A) server and an A2A client with Google Apps Script.
  * 
  * Author: Kanshi Tanaike
- * 20250529 10:04
- * version 2.0.1
+ * 20250618 10:40
+ * version 2.0.２
  * @class
  */
 class A2AApp {
@@ -23,6 +23,9 @@ class A2AApp {
 
     /** @private */
     this.model = "models/gemini-2.0-flash"; // or "models/gemini-2.5-flash-preview-04-17"
+
+    /** @private */
+    this.jsonrpc = "2.0";
 
     /** @private */
     this.date = new Date();
@@ -158,7 +161,7 @@ class A2AApp {
       } catch ({ stack }) {
         console.error(stack);
         const err = "Internal server error";
-        const errObj = { "error": { "code": this.ErrorCode[err], "message": `${err}. Error message: ${stack}` }, "jsonrpc": "2.0", id };
+        const errObj = { "error": { "code": this.ErrorCode[err], "message": `${err}. Error message: ${stack}` }, "jsonrpc": this.jsonrpc, id };
         this.values.push([this.date, null, id, "server --> client", JSON.stringify(errObj)]);
         if (this.log) {
           this.log_();
@@ -170,7 +173,7 @@ class A2AApp {
     } else {
       console.error("Timeout.");
       const err = "Internal server error";
-      const errObj = { "error": { "code": this.ErrorCode[err], "message": `${err}. Error message: Timeout.` }, "jsonrpc": "2.0", id };
+      const errObj = { "error": { "code": this.ErrorCode[err], "message": `${err}. Error message: Timeout.` }, "jsonrpc": this.jsonrpc, id };
       this.values.push([this.date, null, id, "server --> client", JSON.stringify(errObj)]);
       if (this.log) {
         this.log_();
@@ -295,18 +298,87 @@ class A2AApp {
     if (this.accessKey && eventObject.parameter.accessKey && eventObject.parameter.accessKey != this.accessKey) {
       this.values.push([this.date, method, id, "At server", "Invalid accessKey."]);
       const err = "Authorization failed";
-      const errObj = { "error": { "code": this.ErrorCode[err], "message": `${err}. Invalid access key.` }, "jsonrpc": "2.0", id };
+      const errObj = { "error": { "code": this.ErrorCode[err], "message": `${err}. Invalid access key.` }, "jsonrpc": this.jsonrpc, id };
       this.values.push([this.date, method, id, "server --> client", JSON.stringify(errObj)]);
       return this.createContent_(errObj);
     }
 
-    if (method == "tasks/send" && functions) {
+    if (method == "message/send" && functions) {
+      let resObj;
+      let messageId;
+      try {
+        if (typeof functions != "function") {
+          const err = "Internal server error";
+          const errObj = { "error": { "code": this.ErrorCode[err], "message": `${err}. Invalid functions.` }, "jsonrpc": this.jsonrpc, id };
+          this.values.push([this.date, method, id, "server --> client", JSON.stringify(errObj)]);
+          return this.createContent_(errObj);
+        }
+        const { params } = obj;
+        const { message } = params;
+        messageId = params.messageId;
+        const prompt = message.parts[0].text;
+
+        const { result, history } = this.processAgents_({
+          apiKey,
+          prompt,
+          functions: functions(),
+          fileAsBlob: true,
+          agentCards,
+        });
+        for (let i = 0; i < result.length; i++) {
+          if (typeof result[i] == "string") {
+            result[i] = { type: "text", kind: "text", text: result[i] };
+          }
+        }
+        const { messageParts } = result.reduce((o, e, i) => {
+          const type = e.type;
+          if (type == "text") {
+            const gg = new GeminiWithFiles({ apiKey, model: this.model, history });
+            const res = gg.generateContent({
+              parts: [
+                { text: `Summarize answers by considering the question.` },
+                { text: `<Question>${prompt}</Question>` },
+                { text: `<Answers>${e[e.type]}</Answers>` }
+              ]
+            });
+            o.messageParts.push({ type: "text", kind: "text", text: res });
+            o.artifacts.push({ name: "Answer", index: i, parts: [{ type: "text", kind: "text", text: res }] });
+          } else {
+            if (type != "file" && type != "data") {
+              o.messageParts.push(e);
+            } else {
+              o.messageParts.push({ type: "text", kind: "text", text: `The data "${e[type].name}" was downloaded.` });
+            }
+            o.artifacts.push({ name: "Answer", index: i, parts: [e] });
+          }
+          return o;
+        }, { artifacts: [], messageParts: [] });
+        resObj = {
+          jsonrpc: this.jsonrpc,
+          result: {
+            kind: "message",
+            messageId,
+            parts: messageParts,
+            role: "agent"
+          },
+          id
+        };
+      } catch ({ stack }) {
+        console.error(stack);
+        const err = "Internal server error";
+        resObj = { "error": { "code": this.ErrorCode[err], "message": `${err}. Error message: ${stack}` }, "jsonrpc": this.jsonrpc, id };
+      }
+
+      this.values.push([this.date, method, id, "server --> client", JSON.stringify(resObj)]);
+      return this.createContent_(resObj);
+
+    } else if (method == "tasks/send" && functions) {
       let resObj;
       let paramsId, sessionId;
       try {
         if (typeof functions != "function") {
           const err = "Internal server error";
-          const errObj = { "error": { "code": this.ErrorCode[err], "message": `${err}. Invalid functions.` }, "jsonrpc": "2.0", id };
+          const errObj = { "error": { "code": this.ErrorCode[err], "message": `${err}. Invalid functions.` }, "jsonrpc": this.jsonrpc, id };
           this.values.push([this.date, method, id, "server --> client", JSON.stringify(errObj)]);
           return this.createContent_(errObj);
         }
@@ -325,7 +397,7 @@ class A2AApp {
         });
         for (let i = 0; i < result.length; i++) {
           if (typeof result[i] == "string") {
-            result[i] = { type: "text", text: result[i] };
+            result[i] = { type: "text", kind: "text", text: result[i] };
           }
         }
         const { artifacts, messageParts } = result.reduce((o, e, i) => {
@@ -339,13 +411,13 @@ class A2AApp {
                 { text: `<Answers>${e[e.type]}</Answers>` }
               ]
             });
-            o.messageParts.push({ type: "text", text: res });
-            o.artifacts.push({ name: "Answer", index: i, parts: [{ type: "text", text: res }] });
+            o.messageParts.push({ type: "text", kind: "text", text: res });
+            o.artifacts.push({ name: "Answer", index: i, parts: [{ type: "text", kind: "text", text: res }] });
           } else {
             if (type != "file" && type != "data") {
               o.messageParts.push(e);
             } else {
-              o.messageParts.push({ type: "text", text: `The data "${e[type].name}" was downloaded.` });
+              o.messageParts.push({ type: "text", kind: "text", text: `The data "${e[type].name}" was downloaded.` });
             }
             o.artifacts.push({ name: "Answer", index: i, parts: [e] });
           }
@@ -353,8 +425,9 @@ class A2AApp {
         }, { artifacts: [], messageParts: [] });
 
         resObj = {
-          jsonrpc: "2.0",
+          jsonrpc: this.jsonrpc,
           result: {
+            kind: "task",
             id: paramsId,
             sessionId: sessionId,
             status: {
@@ -368,31 +441,14 @@ class A2AApp {
         };
       } catch ({ stack }) {
         console.error(stack);
-        resObj = {
-          jsonrpc: "2.0",
-          result: {
-            id: paramsId,
-            sessionId: sessionId,
-            status: {
-              state: this.TaskState.failed,
-              message: { role: "agent", parts: [{ type: "text", text: stack }] },
-              timestamp: this.date.toISOString()
-            },
-            artifacts: [
-              {
-                name: "Answer",
-                index: 0,
-                parts: [{ type: "text", text: stack }]
-              }
-            ]
-          },
-          id,
-        };
+        const err = "Internal server error";
+        resObj = { "error": { "code": this.ErrorCode[err], "message": `${err}. Error message: ${stack}` }, "jsonrpc": this.jsonrpc, id };
       }
 
       this.values.push([this.date, method, id, "server --> client", JSON.stringify(resObj)]);
       return this.createContent_(resObj);
     }
+
     return null;
   }
 
@@ -517,9 +573,9 @@ class A2AApp {
           const id2 = Utilities.getUuid();
           const id3 = Utilities.getUuid();
           const resObj = {
-            jsonrpc: '2.0',
+            jsonrpc: this.jsonrpc,
             id: id1,
-            method: 'tasks/send',
+            method: "tasks/send",
             params:
             {
               id: id2,
@@ -714,7 +770,7 @@ class A2AApp {
     const orderAr = g.generateContent({ q: textPrompt });
     if (!Array.isArray(orderAr) || orderAr.length == 0) {
       const err = "Internal server error";
-      const errObj = { "error": { "code": this.ErrorCode[err], "message": `${err}. Try again.` }, "jsonrpc": "2.0", id };
+      const errObj = { "error": { "code": this.ErrorCode[err], "message": `${err}. Try again.` }, "jsonrpc": this.jsonrpc, id };
       this.values.push([this.date, null, null, "Client side", JSON.stringify(errObj)]);
       return errObj;
     }
