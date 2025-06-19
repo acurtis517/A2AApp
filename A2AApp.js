@@ -3,8 +3,8 @@
  * This is used for building both an Agent2Agent (A2A) server and an A2A client with Google Apps Script.
  * 
  * Author: Kanshi Tanaike
- * 20250618 10:40
- * version 2.0.２
+ * 20250619 10:15
+ * version 2.0.3
  * @class
  */
 class A2AApp {
@@ -295,7 +295,10 @@ class A2AApp {
     const method = obj.method.toLowerCase();
     this.values.push([this.date, method, id, "client --> server", JSON.stringify(obj)]);
 
-    if (this.accessKey && eventObject.parameter.accessKey && eventObject.parameter.accessKey != this.accessKey) {
+    if (
+      (this.accessKey && !eventObject.parameter.accessKey) ||
+      (this.accessKey && eventObject.parameter.accessKey && eventObject.parameter.accessKey != this.accessKey)
+    ) {
       this.values.push([this.date, method, id, "At server", "Invalid accessKey."]);
       const err = "Authorization failed";
       const errObj = { "error": { "code": this.ErrorCode[err], "message": `${err}. Invalid access key.` }, "jsonrpc": this.jsonrpc, id };
@@ -802,6 +805,7 @@ class A2AApp {
         `</Important>`,
       ];
       const res = gg.generateContent({ q: q.join("\n") });
+
       if (res.functionResponse?.request) {
         const re = UrlFetchApp.fetchAll([res.functionResponse?.request])[0];
         if (re.getResponseCode() == 200) {
@@ -836,6 +840,8 @@ class A2AApp {
         }
       } else if (res.functionResponse?.result) {
         ar.push({ type: "text", text: res.functionResponse.result });
+      } else if (res.functionResponse?.a2a && res.functionResponse?.a2a?.result) {
+        ar.push({ type: "text", text: res.functionResponse.a2a.result });
       } else {
         ar.push({ error: `Error: Name: ${name}, Task: ${task}, Result: ${JSON.stringify(res)}` });
       }

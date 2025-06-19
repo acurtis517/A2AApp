@@ -398,5 +398,9 @@ Once the above steps are completed, access `http://0.0.0.0:12000/` or `http://lo
 
   1. A bug was removed.
 
+- v2.0.3 (June 19, 2025)
+
+  1. A bug was removed.
+
 [TOP](#top)
 
